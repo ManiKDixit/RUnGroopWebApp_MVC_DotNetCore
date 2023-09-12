@@ -43,6 +43,13 @@ namespace RUnGroopWebApp.Repository
 
         }
 
+
+        public async Task<Race> GetByIdAsyncNoTracking(int id)
+        {
+            return await _context.Races.Include(i => i.Address).AsNoTracking().FirstOrDefaultAsync(i => i.Id == id);
+
+        }
+
         public bool Save()
         {
             var saved = _context.SaveChanges();
@@ -51,7 +58,8 @@ namespace RUnGroopWebApp.Repository
 
         public bool Update(Race race)
         {
-            throw new NotImplementedException();
+            _context.Update(race);
+            return Save();
         }
     }
 }
