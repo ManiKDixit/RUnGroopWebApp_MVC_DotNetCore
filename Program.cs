@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RUnGroopWebApp.Data;
 using RUnGroopWebApp.Helpers;
 using RUnGroopWebApp.Interfaces;
+using RUnGroopWebApp.Models;
 using RUnGroopWebApp.Repository;
 using RUnGroopWebApp.Services;
 
@@ -19,11 +22,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+builder.Services.AddIdentity<AppUser , IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>(); // This is what's going to set up our Database context 
+builder.Services.AddMemoryCache(); // We add this line to avoid some wierd error that comes 
+builder.Services.AddSession(); //this is what's going to give us cookie Authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie();     //Line for cookie
+
 var app = builder.Build();
 
 if (args.Length == 1 && args[0].ToLower() == "seeddata")
 {
-   // await Seed.SeedUsersAndRolesAsync(app);
+    await Seed.SeedUsersAndRolesAsync(app);
     Seed.SeedData(app);
 }
 
