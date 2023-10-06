@@ -17,10 +17,13 @@ namespace RUnGroopWebApp.Controllers
 
         private readonly IPhotoService _photoService;
 
-        public RaceController(IRaceRepository raceRepository , IPhotoService photoService)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public RaceController(IRaceRepository raceRepository , IPhotoService photoService , IHttpContextAccessor httpContextAccessor)
         {
            _raceRepository = raceRepository;
             _photoService = photoService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<IActionResult> Index()
@@ -38,7 +41,9 @@ namespace RUnGroopWebApp.Controllers
 
         public IActionResult Create()
         {
-            return View();
+            var curUserID = _httpContextAccessor.HttpContext?.User.GetUserId();
+            var createRaceViewModel = new CreateRaceViewModel { AppUserId = curUserID };
+            return View(createRaceViewModel);
         }
 
         [HttpPost]
@@ -53,6 +58,7 @@ namespace RUnGroopWebApp.Controllers
                     Title = raceVM.Title,
                     Description = raceVM.Description,
                     Image = result.Url.ToString(),
+                    AppUserId = raceVM.AppUserId,
                     Address = new Address
                     {
                         Street = raceVM.Address.Street,
@@ -133,7 +139,7 @@ namespace RUnGroopWebApp.Controllers
 
             var race = new Race
             {
-                Id = id,
+                //Id = id,
                 Title = raceVM.Title,
                 Description = raceVM.Description,
                 Image = photoResult.Url.ToString(),
@@ -145,5 +151,32 @@ namespace RUnGroopWebApp.Controllers
 
             return RedirectToAction("Index");
         }
+
     }
 }
+
+
+/*
+ * var curUserID = _httpContextAccessor.HttpContext?.User.GetUserId();
+            var editRaceViewModel = new EditRaceViewModel { AppUserId = curUserID,};
+            // return View(editRaceViewModel);
+            var race = await _raceRepository.GetByIdAsync(id);
+            if (race == null)
+            {
+                return View("Error");
+            }
+            var raceVM = new EditRaceViewModel
+            {
+                //AppUserId = curUserID,
+                Title = editRaceViewModel.Title,
+                Description = editRaceViewModel.Description,
+                AddressId = editRaceViewModel.AddressId,
+                Address = editRaceViewModel.Address,
+                 //URL = race.Image.ToString(),
+                RaceCategory = editRaceViewModel.RaceCategory
+
+            };
+
+            return View(raceVM);
+
+ */

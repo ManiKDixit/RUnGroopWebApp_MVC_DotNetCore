@@ -14,12 +14,14 @@ namespace RUnGroopWebApp.Controllers
        // private readonly ApplicationDbContext _context;
         private readonly IClubRepository _clubRepository;
         private readonly IPhotoService _photoService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ClubController(ApplicationDbContext context , IClubRepository clubRepository , IPhotoService photoService)
+        public ClubController(ApplicationDbContext context , IClubRepository clubRepository , IPhotoService photoService , IHttpContextAccessor httpContextAccessor)
         {
            // _context = context; //Injecting the DB here
             _clubRepository = clubRepository;
             _photoService = photoService;
+            _httpContextAccessor = httpContextAccessor;  
         }
 
 
@@ -35,23 +37,72 @@ namespace RUnGroopWebApp.Controllers
             return View(club);
         }
 
-        public IActionResult Create ()
+
+        //[HttpGet]
+        //public IActionResult Create()
+        //{
+        //    var curUserID = _httpContextAccessor.HttpContext?.User.GetUserId();
+        //    var createClubViewModel = new CreateClubViewModel { AppUserId = curUserID };
+        //    return View(createClubViewModel);
+        //}
+
+        //[HttpPost]
+        //public async Task<IActionResult> Create (CreateClubViewModel clubVM)
+        //{
+        //    if(ModelState.IsValid)
+        //    {
+        //        // return View(club);
+        //        var result = await _photoService.AddPhotoAsync(clubVM.Image);
+        //        var club = new Club
+        //        {
+        //            Title = clubVM.Title,
+        //            Description = clubVM.Description,
+        //            Image = result.Url.ToString(),
+        //            AppUserId = clubVM.AppUserId,
+        //            Address = new Address
+        //            {
+        //                Street = clubVM.Address.Street,
+        //                City = clubVM.Address.City,
+        //                State = clubVM.Address.State,
+        //            }
+        //        };
+
+        //        _clubRepository.Add(club);
+        //        return RedirectToAction("Index");
+        //    }
+        //    else
+        //    {
+        //        ModelState.AddModelError("", "Photo upload failed");
+        //    }
+
+        //    return View(clubVM);
+
+        //}
+
+
+
+        [HttpGet]
+        public IActionResult Create()
         {
-            return View();
+            var curUserId = _httpContextAccessor.HttpContext?.User.GetUserId();
+            var createClubViewModel = new CreateClubViewModel { AppUserId = curUserId };
+            return View(createClubViewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create (CreateClubViewModel clubVM)
+        public async Task<IActionResult> Create(CreateClubViewModel clubVM)
         {
-            if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                // return View(club);
                 var result = await _photoService.AddPhotoAsync(clubVM.Image);
+
                 var club = new Club
                 {
                     Title = clubVM.Title,
                     Description = clubVM.Description,
                     Image = result.Url.ToString(),
+                    ClubCategory = clubVM.ClubCategory,
+                    AppUserId = clubVM.AppUserId,
                     Address = new Address
                     {
                         Street = clubVM.Address.Street,
@@ -59,7 +110,6 @@ namespace RUnGroopWebApp.Controllers
                         State = clubVM.Address.State,
                     }
                 };
-
                 _clubRepository.Add(club);
                 return RedirectToAction("Index");
             }
@@ -69,11 +119,11 @@ namespace RUnGroopWebApp.Controllers
             }
 
             return View(clubVM);
-
         }
 
         public async Task<IActionResult> Edit (int id) {
-            
+
+            var curUserId = _httpContextAccessor.HttpContext?.User.GetUserId();
             var club = await _clubRepository.GetByIdAsync (id);
             if(club == null)
             {
@@ -82,12 +132,12 @@ namespace RUnGroopWebApp.Controllers
 
             var clubVM = new EditClubViewModel
             {
-
+                //AppUserId = curUserId,
                 Title = club.Title,
                 Description = club.Description,
                 AddressId = club.AddressId,
                 Address = club.Address,
-                URL = club.Image,
+                URL = club.Image.ToString(),
                 ClubCategory = club.ClubCategory
 
             };
@@ -132,6 +182,7 @@ namespace RUnGroopWebApp.Controllers
                 Id = id,
                 Title = clubVM.Title,
                 Description = clubVM.Description,
+                //AppUserId =  clubVM.AppUserId,
                 Image = photoResult.Url.ToString(),
                 AddressId = clubVM.AddressId,
                 Address = clubVM.Address,
@@ -143,3 +194,8 @@ namespace RUnGroopWebApp.Controllers
         }
     }
 }
+
+
+/*
+ * // This would actually pass the user Id in the Getuser method as a paramteer without explicitly writing the parameter , so here we're basicallhy fetching the user id , without going to the Database.
+ */
