@@ -152,6 +152,26 @@ namespace RUnGroopWebApp.Controllers
             return RedirectToAction("Index");
         }
 
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            var raceDetails = await _raceRepository.GetByIdAsync(id);
+            if (raceDetails == null) return View("Error");
+            return View(raceDetails);
+
+        }
+
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteClub(int id)
+        {
+            var raceDetails = await _raceRepository.GetByIdAsync(id);
+            if (raceDetails == null) return View("Error");
+
+            _raceRepository.Delete(raceDetails);
+            return RedirectToAction("Index");
+
+        }
+
     }
 }
 
